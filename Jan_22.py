@@ -18,7 +18,7 @@ st.set_page_config(page_title='iSMM Dashboard',
                    initial_sidebar_state='collapsed')
 
 
-page = st_btn_select(('Faults', 'Schedules', 'Corrective Maintenance', 'Utilities', 'Inventories'),
+page = st_btn_select(('Faults', 'Schedules', 'Asset', 'Corrective Maintenance', 'Utilities', 'Inventories'),
                      nav=True,
                      format_func=lambda name: name.capitalize(),
                      )
@@ -61,7 +61,7 @@ if authentication_status:
             cols = ['Fault Number', 'Building Trade', 'Trade Category',
                     'Type of Fault', 'Impact', 'Location', 'Cancel Status', 'Reported Date',
                     'Fault Acknowledged Date', 'Responded on Site Date', 'RA Conducted Date',
-                    'Work Started Date', 'Work Completed Date', 'Action(s) Taken',
+                    'Work Started Date', 'Work Completed Date', 'Attended By', 'Action(s) Taken',
                     'Other Trades Required Date', 'Cost Cap Exceed Date',
                     'Assistance Requested Date', 'Fault Reference',
                     'End User Priority', 'Incident Report', 'Remarks']
@@ -73,7 +73,7 @@ if authentication_status:
             return pd.read_excel(filename, header=1, index_col='Fault Number', usecols=cols, parse_dates=parse_dates)
 
 
-        df = fetch_file('Fault 2022-02-05 003512.xlsx')
+        df = fetch_file('Fault 2022-02-11 150335.xlsx')
 
         df.columns = df.columns.str.replace(' ', '_')
         df['Time_Acknowledged_mins'] = (df.Fault_Acknowledged_Date - df.Reported_Date)/pd.Timedelta(minutes=1)
@@ -100,8 +100,8 @@ if authentication_status:
 
         df_high = df3[df3.Remarks.str.contains('high|High|HIGH')]
         df_medium = df3[df3.Remarks.str.contains('medium|Medium|MEDIUM')]
-        # df_low = df3[~df3.Remarks.str.contains('medium|Medium|MEDIUM|high|High|HIGH')]
-        df_low = ~[df_high and df_medium]
+        df_low = df3[~df3.Remarks.str.contains('medium|Medium|MEDIUM|high|High|HIGH')]
+        
 
         bin_responded_low = [0, 15, np.inf]
         label_responded_low = ['0-15mins', '15-np.inf']
@@ -275,7 +275,7 @@ if authentication_status:
 
         with column10_fault, _lock:
             st.markdown('')
-
+        
     #--------------------------------------- color & width & opacity-------------------------------------------------
         # all chart
         titlefontcolor = '#116a8c'
@@ -297,9 +297,9 @@ if authentication_status:
         markercolor = '#116a8c'
         markerlinecolor = '#116a8c'
         markerlinewidth = 1
-        opacity01 = 0.6
-        opacity02 = 0.7
-        opacity03 = 0.9
+        opacity01 = 1
+        opacity02 = 1
+        opacity03 = 1
 
         # x&y axis width and color
         linewidth_xy_axis = 1
@@ -310,52 +310,52 @@ if authentication_status:
         linewidth = 2
 
     #---------------------------------------Outstanding Faults-----------------------------------------------------
-        st.markdown('##')
-        st.markdown('##')
-        st.markdown("""<hr style="height:5px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
-        # st.markdown(':wavy_dash:' *50)
-        # st.markdown('---')
-        st.markdown(html_card_subheader_outstanding, unsafe_allow_html=True)
-        st.markdown('##')
+        # st.markdown('##')
+        # st.markdown('##')
+        # st.markdown("""<hr style="height:5px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
+        # # st.markdown(':wavy_dash:' *50)
+        # # st.markdown('---')
+        # st.markdown(html_card_subheader_outstanding, unsafe_allow_html=True)
+        # st.markdown('##')
 
-        df_outstanding_show = df_outstanding.loc[:, ['Building_Trade', 'Trade_Category', 'Type_of_Fault', 'Location',
-                                                     'Reported_Date', 'Other_Trades_Required_Date', 'Cost_Cap_Exceed_Date', 'Assistance_Requested_Date',
-                                                    'Remarks']].sort_values('Building_Trade')
+        # df_outstanding_show = df_outstanding.loc[:, ['Building_Trade', 'Trade_Category', 'Type_of_Fault', 'Location',
+        #                                              'Reported_Date', 'Other_Trades_Required_Date', 'Cost_Cap_Exceed_Date', 'Assistance_Requested_Date',
+        #                                             'Remarks']].sort_values('Building_Trade')
 
-        props = 'font-style: italic; color: #ffffff; font-size:0.8em; font-weight:normal;'  #border: 0.0001px solid #116a8c; background: #116a8c'
-        df_outstandingdataframe = df_outstanding_show.style.applymap(lambda x: props)
-        st.dataframe(df_outstandingdataframe, 10000, 200)
+        # props = 'font-style: italic; color: #ffffff; font-size:0.8em; font-weight:normal;'  #border: 0.0001px solid #116a8c; background: #116a8c'
+        # df_outstandingdataframe = df_outstanding_show.style.applymap(lambda x: props)
+        # st.dataframe(df_outstandingdataframe, 10000, 200)
 
-        ser_outstanding_building = df_outstanding.groupby(['Building_Trade'])['Type_of_Fault'].count().sort_values(ascending=False)
-        ser_outstanding_category = df_outstanding.groupby(['Trade_Category'])['Type_of_Fault'].count().sort_values(ascending=False)
+        # ser_outstanding_building = df_outstanding.groupby(['Building_Trade'])['Type_of_Fault'].count().sort_values(ascending=False)
+        # ser_outstanding_category = df_outstanding.groupby(['Trade_Category'])['Type_of_Fault'].count().sort_values(ascending=False)
 
-        x_outstanding_building = ser_outstanding_building.index
-        y_outstanding_building = ser_outstanding_building.values
-        x_outstanding_category = ser_outstanding_category.index
-        y_outstanding_category = ser_outstanding_category.values
+        # x_outstanding_building = ser_outstanding_building.index
+        # y_outstanding_building = ser_outstanding_building.values
+        # x_outstanding_category = ser_outstanding_category.index
+        # y_outstanding_category = ser_outstanding_category.values
 
-        fig_outstanding_building, fig_outstanding_category = st.columns([1, 2])
+        # fig_outstanding_building, fig_outstanding_category = st.columns([1, 2])
 
-        with fig_outstanding_building, _lock:
-            fig_outstanding_building = go.Figure(data=[go.Pie(labels=x_outstanding_building, values=y_outstanding_building,
-                                                              hoverinfo='all', textinfo='label+percent+value', textfont_size=15,
-                                                              textfont_color='white', textposition='inside', showlegend=False,
-                                                              hole=.4)])
-            fig_outstanding_building.update_layout(title='Number of Fault vs Building Trade', annotations=[dict(text='Outstanding', x=0.5, y=0.5, font_color='white', font_size=15, showarrow=False)])
-            fig_outstanding_building.update_traces(marker=dict(colors=colorpieoutstanding))
-            st.plotly_chart(fig_outstanding_building, use_container_width=True)
+        # with fig_outstanding_building, _lock:
+        #     fig_outstanding_building = go.Figure(data=[go.Pie(labels=x_outstanding_building, values=y_outstanding_building,
+        #                                                       hoverinfo='all', textinfo='label+percent+value', textfont_size=15,
+        #                                                       textfont_color='white', textposition='inside', showlegend=False,
+        #                                                       hole=.4)])
+        #     fig_outstanding_building.update_layout(title='Number of Fault vs Building Trade', annotations=[dict(text='Outstanding', x=0.5, y=0.5, font_color='white', font_size=15, showarrow=False)])
+        #     fig_outstanding_building.update_traces(marker=dict(colors=colorpieoutstanding))
+        #     st.plotly_chart(fig_outstanding_building, use_container_width=True)
 
-        with fig_outstanding_category, _lock:
-            fig_outstanding_category = go.Figure(data=[go.Bar(x=x_outstanding_category, y=y_outstanding_category, orientation='v',
-                                                              text=y_outstanding_category, textfont=dict(family='sana serif', size=14, color='#c4fff7'),
-                                                               textposition='auto', textangle=-45)])
-            fig_outstanding_category.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
-                               gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
-            fig_outstanding_category.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=True, gridwidth=gridwidth,
-                               gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
-            fig_outstanding_category.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor, marker_line_width=markerlinewidth)
-            fig_outstanding_category.update_layout(title='Number of Fault vs Trade Category', plot_bgcolor=plot_bgcolor)
-            st.plotly_chart(fig_outstanding_category, use_container_width=True)
+        # with fig_outstanding_category, _lock:
+        #     fig_outstanding_category = go.Figure(data=[go.Bar(x=x_outstanding_category, y=y_outstanding_category, orientation='v',
+        #                                                       text=y_outstanding_category, textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+        #                                                        textposition='auto', textangle=-45)])
+        #     fig_outstanding_category.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
+        #                        gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
+        #     fig_outstanding_category.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=True, gridwidth=gridwidth,
+        #                        gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
+        #     fig_outstanding_category.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor, marker_line_width=markerlinewidth)
+        #     fig_outstanding_category.update_layout(title='Number of Fault vs Trade Category', plot_bgcolor=plot_bgcolor)
+        #     st.plotly_chart(fig_outstanding_category, use_container_width=True)
 
     #--------------------------------------Daily Fault----------------------------------------------------------
         st.markdown("""<hr style="height:5px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
@@ -372,9 +372,9 @@ if authentication_status:
         fig_daily.add_hline(y=y_mean, line_dash='dot', line_color=linecolor, line_width=linewidth, annotation_text='Average Line',
                                   annotation_position='bottom right', annotation_font_size=18, annotation_font_color='green')
         fig_daily.update_xaxes(title_text='Date', tickangle=-45, title_font_color=titlefontcolor, tickmode='linear', range=[1, 31],
-                                           showgrid=False, gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
+                                           showgrid=False, gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis, zeroline=False)
         fig_daily.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=False,
-                               gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis)
+                               gridwidth=gridwidth, gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, zeroline=False)
         fig_daily.update_layout(title='Number of Fault vs Date', plot_bgcolor=plot_bgcolor)
         st.plotly_chart(fig_daily, use_container_width=True)
 
@@ -894,13 +894,14 @@ if authentication_status:
                        'Fault_Work_Started_min(hrs)', 'Fault_Work_Started_mean(hrs)', 'Fault_Work_Started_sum(hrs)', 'Fault_Recovered_count',
                        'Fault_Recovered_max(hrs)', 'Fault_Recovered_min(hrs)', 'Fault_Recovered_mean(hrs)', 'Fault_Recovered_sum(hrs)']
         df13.columns = cols_name_buildinglevel
-        df14 = df13.loc[:, ['Fault_Recovered_count', 'Fault_Recovered_sum(hrs)']]
+        df14 = df13.loc[:, ['Fault_Recovered_count', 'Fault_Recovered_sum(hrs)']].sort_values(by=['Fault_Recovered_count'], ascending=False).head(10)
+        df14_sum = df13.loc[:, ['Fault_Recovered_count','Fault_Recovered_sum(hrs)']].sort_values(by=['Fault_Recovered_sum(hrs)'], ascending=False).head(10)
 
-        x_fig21 = df14['Fault_Recovered_count'].sort_values().index
-        y_fig21 = df14['Fault_Recovered_count'].sort_values().values
+        x_fig21 = df14['Fault_Recovered_count'].sort_values(ascending=True).index
+        y_fig21 = df14['Fault_Recovered_count'].sort_values(ascending=True).values
 
-        x_fig22 = df14['Fault_Recovered_sum(hrs)'].sort_values().index
-        y_fig22 = df14['Fault_Recovered_sum(hrs)'].sort_values().values
+        x_fig22 = df14_sum['Fault_Recovered_sum(hrs)'].sort_values(ascending=True).index
+        y_fig22 = df14_sum['Fault_Recovered_sum(hrs)'].sort_values(ascending=True).values
 
 
         fig21, fig22 = st.columns(2)
@@ -914,7 +915,7 @@ if authentication_status:
             fig21.update_yaxes(title_text='Level', title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
                                gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis, tickmode='linear')
             fig21.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor, marker_line_width=markerlinewidth, opacity=opacity02)
-            fig21.update_layout(title='Number of Fault vs Building& Level', plot_bgcolor=plot_bgcolor)
+            fig21.update_layout(title='Number of Fault vs Building& Level-Top 10', plot_bgcolor=plot_bgcolor)
             st.plotly_chart(fig21, use_container_width=True)
 
         with fig22, _lock:
@@ -927,7 +928,7 @@ if authentication_status:
             fig22.update_yaxes(title_text='Level', title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
                                gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis, tickmode='linear')
             fig22.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor, marker_line_width=markerlinewidth, opacity=opacity03)
-            fig22.update_layout(title='Total Time Spent(hrs) vs Building& Level', plot_bgcolor=plot_bgcolor)
+            fig22.update_layout(title='Total Time Spent(hrs) vs Building& Level-Top 10', plot_bgcolor=plot_bgcolor)
             st.plotly_chart(fig22, use_container_width=True)
 
 
@@ -941,14 +942,14 @@ if authentication_status:
                        'Fault_Recovered_max(hrs)', 'Fault_Recovered_min(hrs)', 'Fault_Recovered_mean(hrs)', 'Fault_Recovered_sum(hrs)']
         df15.columns = cols_name_buildinglevelroom
 
-        df16 = df15.loc[:, ['Fault_Recovered_count', 'Fault_Recovered_sum(hrs)']].sort_values('Fault_Recovered_count', ascending=False).head(20)
-        df17 = df15.loc[:, ['Fault_Recovered_count', 'Fault_Recovered_sum(hrs)']].sort_values('Fault_Recovered_sum(hrs)',ascending=False).head(20)
+        df16 = df15.loc[:, ['Fault_Recovered_count', 'Fault_Recovered_sum(hrs)']].sort_values('Fault_Recovered_count', ascending=False).head(10)
+        df17 = df15.loc[:, ['Fault_Recovered_count', 'Fault_Recovered_sum(hrs)']].sort_values('Fault_Recovered_sum(hrs)',ascending=False).head(10)
 
-        x_fig23 = df16['Fault_Recovered_count'].sort_values().index
-        y_fig23 = df16['Fault_Recovered_count'].sort_values().values
+        x_fig23 = df16['Fault_Recovered_count'].sort_values(ascending=True).index
+        y_fig23 = df16['Fault_Recovered_count'].sort_values(ascending=True).values
 
-        x_fig24 = df17['Fault_Recovered_sum(hrs)'].sort_values().index
-        y_fig24 = df17['Fault_Recovered_sum(hrs)'].sort_values().values
+        x_fig24 = df17['Fault_Recovered_sum(hrs)'].sort_values(ascending=True).index
+        y_fig24 = df17['Fault_Recovered_sum(hrs)'].sort_values(ascending=True).values
 
 
         fig23, fig24 = st.columns(2)
@@ -962,7 +963,7 @@ if authentication_status:
             fig23.update_yaxes(title_text='Room', title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
                                gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis, tickmode='linear')
             fig23.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor, marker_line_width=markerlinewidth, opacity=opacity02)
-            fig23.update_layout(title='Number of Fault vs Building Floor& Room-Top 20', plot_bgcolor=plot_bgcolor)
+            fig23.update_layout(title='Number of Fault vs Building Floor& Room-Top 10', plot_bgcolor=plot_bgcolor)
             st.plotly_chart(fig23, use_container_width=True)
 
         with fig24, _lock:
@@ -975,7 +976,7 @@ if authentication_status:
             fig24.update_yaxes(title_text='Room', title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
                                gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis, linecolor=linecolor_xy_axis, tickmode='linear')
             fig24.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor, marker_line_width=markerlinewidth, opacity=opacity03)
-            fig24.update_layout(title='Total Time Spent(hrs) vs Building Floor& Room-Top 20', plot_bgcolor=plot_bgcolor)
+            fig24.update_layout(title='Total Time Spent(hrs) vs Building Floor& Room-Top 10', plot_bgcolor=plot_bgcolor)
             st.plotly_chart(fig24, use_container_width=True)
 
 #------------------------------------Number of fault vs technician---------------------------------------
@@ -988,7 +989,7 @@ if authentication_status:
         Hossain = df3[df3.Remarks.str.contains('Hossain|hossain')].shape[0]
         Ilayaraja = df3[df3.Remarks.str.contains('Ilayaraja|ilayaraja')].shape[0]
         Isyamudin = df3[df3.Remarks.str.contains('Isyamudin|isyamudin|lsyamudin|Lsyamudin')].shape[0]
-        #Lifei = df3[df3.Remarks.str.contains('Lifei|lifei|Li Fei|Li fei|li fei')].shape[0]
+        Lifei = df3[df3.Remarks.str.contains('Lifei|lifei|Li Fei|Li fei|li fei')].shape[0]
         Mani = df3[df3.Remarks.str.contains('Mani|mani')].shape[0]
         Mingcai = df3[df3.Remarks.str.contains('Mingcai|mingcai|Ming Cai|Ming cai|ming cai')].shape[0]
         Nazri = df3[df3.Remarks.str.contains('Nazri|nazri')].shape[0]
@@ -997,74 +998,79 @@ if authentication_status:
         Shanmu = df3[df3.Remarks.str.contains('Shanmu|shanmu')].shape[0]
         Su = df3[df3.Remarks.str.contains('-Su|-su|- Su|- su')].shape[0]
         Vbala = df3[df3.Remarks.str.contains('Vbala|vbala|V.bala|v.bala|V.Bala')].shape[0]
+        Jailani = df3[df3.Remarks.str.contains('Jailani|jailani|Jailan|jailan|Jailan|jailan')].shape[0]
+        Packiyaraj = df3[df3.Remarks.str.contains('Packiyaraj|packiyaraj')].shape[0]
+        Ela = df3[df3.Remarks.str.contains('Ela|ela')].shape[0]
+        FRC = df3[df3.Remarks.str.contains('FRC|frc')].shape[0]
+     
 
-        x_people = ['Abala', 'Allan', 'Aru', 'Hossain', 'Ilayaraja', 'Isyamudin', 'Mani', 'Mingcai', 'Nazri', 'Satha', 'Senthil', 'Shanmu', 'Su', 'Vbala']
-        y_people = [Abala, Allan, Aru, Hossain, Ilayaraja, Isyamudin, Mani, Mingcai, Nazri, Satha, Senthil, Shanmu, Su, Vbala]
+        x_people = ['Abala', 'Allan', 'Aru', 'Hossain', 'Ilayaraja', 'Isyamudin', 'LiFei', 'Mani', 'Mingcai', 'Nazri', 'Satha', 'Senthil', 'Shanmu', 'Su', 'Vbala', 'Jailani', 'Packiyaraj', 'Ela', 'FRC']
+        y_people = [Abala, Allan, Aru, Hossain, Ilayaraja, Isyamudin, Lifei, Mani, Mingcai, Nazri, Satha, Senthil, Shanmu, Su, Vbala, Jailani, Packiyaraj, Ela, FRC]
         y_people_sum = sum(y_people)
 
         st.markdown(f"Total Fault = {y_people_sum}")
 
-        column01_people, column02_people, column03_people, column04_people, column05_people, column06_people, column07_people, \
-        column08_people, column09_people, column10_people, column11_people, column12_people, column13_people,column14_people, column15_people = st.columns(15)
-        with column01_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Abala</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Abala}</h2>", unsafe_allow_html=True)
+        # column01_people, column02_people, column03_people, column04_people, column05_people, column06_people, column07_people, \
+        # column08_people, column09_people, column10_people, column11_people, column12_people, column13_people,column14_people, column15_people = st.columns(15)
+        # with column01_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Abala</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Abala}</h2>", unsafe_allow_html=True)
 
-        with column02_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Allan</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Allan}</h2>", unsafe_allow_html=True)
+        # with column02_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Allan</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Allan}</h2>", unsafe_allow_html=True)
 
-        with column03_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Aru</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Aru}</h2>", unsafe_allow_html=True)
+        # with column03_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Aru</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Aru}</h2>", unsafe_allow_html=True)
 
-        with column04_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Hossain</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Hossain}</h2>", unsafe_allow_html=True)
+        # with column04_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Hossain</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Hossain}</h2>", unsafe_allow_html=True)
 
-        with column05_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Ilayaraja</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Ilayaraja}</h2>", unsafe_allow_html=True)
+        # with column05_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Ilayaraja</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Ilayaraja}</h2>", unsafe_allow_html=True)
 
-        with column06_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Isyamudin</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Isyamudin}</h2>", unsafe_allow_html=True)
+        # with column06_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Isyamudin</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Isyamudin}</h2>", unsafe_allow_html=True)
 
         # with column07_people, _lock:
         #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Lifei</h6>", unsafe_allow_html=True)
         #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Lifei}</h2>", unsafe_allow_html=True)
 
-        with column08_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Mani</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Mani}</h2>", unsafe_allow_html=True)
+        # with column08_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Mani</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Mani}</h2>", unsafe_allow_html=True)
 
-        with column09_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Mingcai</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Mingcai}</h2>", unsafe_allow_html=True)
+        # with column09_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Mingcai</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Mingcai}</h2>", unsafe_allow_html=True)
 
-        with column10_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Nazri</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Nazri}</h2>", unsafe_allow_html=True)
+        # with column10_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Nazri</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Nazri}</h2>", unsafe_allow_html=True)
 
-        with column11_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Satha</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Satha}</h2>", unsafe_allow_html=True)
+        # with column11_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Satha</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Satha}</h2>", unsafe_allow_html=True)
 
-        with column12_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Senthil</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Senthil}</h2>", unsafe_allow_html=True)
+        # with column12_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Senthil</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Senthil}</h2>", unsafe_allow_html=True)
 
-        with column13_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Shanmu</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Shanmu}</h2>", unsafe_allow_html=True)
+        # with column13_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Shanmu</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Shanmu}</h2>", unsafe_allow_html=True)
 
-        with column14_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Su</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Su}</h2>", unsafe_allow_html=True)
+        # with column14_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Su</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Su}</h2>", unsafe_allow_html=True)
 
-        with column15_people, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Vbala</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Vbala}</h2>", unsafe_allow_html=True)
+        # with column15_people, _lock:
+        #     st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #116a8c;'>Vbala</h6>", unsafe_allow_html=True)
+        #     st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #116a8c;'>{Vbala}</h2>", unsafe_allow_html=True)
 
         st.markdown('##')
         st.markdown('##')
@@ -1090,7 +1096,352 @@ if authentication_status:
                          'in', 'on', 'at', 'make', 'it', 'the', 'and', 'to', 'for', 'need']
             wc = WordCloud(background_color='#0e1117', stopwords= stopwords, colormap='Set2', width = 1920, height = 1200).generate(str(df2['Action(s)_Taken'].values))
             st.image(wc.to_array(), width=650)
+
+
+
+
+        st.markdown('##')
+        st.markdown('##')
+        x_technician = df.Attended_By.value_counts().index
+        y_technicain = df.Attended_By.value_counts().values
+        fig26 = go.Figure(data=[go.Bar(x=x_technician, y=y_technicain, orientation='v', text=y_technicain,
+                                        textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                        textposition='auto', textangle=-45)])
+        fig26.update_xaxes(title_text="Name", title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
+                            gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
+                            linecolor=linecolor_xy_axis, tickangle=-45)
+        fig26.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=False,
+                            gridwidth=gridwidth,
+                            gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
+                            linecolor=linecolor_xy_axis)
+        fig26.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor,
+                            marker_line_width=markerlinewidth, opacity=opacity03)
+        fig26.update_layout(title='Number of Fault vs Name', plot_bgcolor=plot_bgcolor)
+        st.plotly_chart(fig26, use_container_width=True)
+
+
 # =======================================Schedule===================================================================
+if page =='Schedules':
+        def fetch_file_schedules(filename):
+            cols = ['Schedule ID', 'Building Trade', 'Trade Category', 'Strategic Partner',
+               'Frequency', 'Description', 'Type', 'Scope', 'Site', 'Building',
+               'Floor', 'Room', 'Start Date',
+               'End Date', 'Work Started Date', 'Work Completed Date',
+               'Attended By', 'Portal ID', 'Service Report Completed Date',
+               'Total Number of Service Reports',
+               'Total Number of Quantity in Service Reports', 'Asset Tag Number',
+               'Alert Case']
+            parse_dates = ['Start Date', 'End Date', 'Work Started Date', 'Work Completed Date',
+                           'Service Report Completed Date']
+            return pd.read_excel(filename, header=0, index_col='Schedule ID', usecols=cols, parse_dates=parse_dates)
+
+        dfs = fetch_file_schedules('schedules.xlsx')
+        dfs.columns = dfs.columns.str.replace(' ', '_')
+        dfs['Time_Work_Completed_hrs'] = (dfs.Work_Completed_Date - dfs.Work_Started_Date) / pd.Timedelta(hours=1)
+
+    # ----------------------------------------Sidebar---------------------------------------------------------------------
+        st.sidebar.header('Please Filter Here:')
+
+        Building_Trade = st.sidebar.multiselect(
+            'Select the Building Trade:',
+            options=dfs['Building_Trade'].unique(),
+            default=dfs['Building_Trade'].unique()
+        )
+
+        Trade_Category = st.sidebar.multiselect(
+            'Select the Trade Category:',
+            options=dfs['Trade_Category'].unique(),
+            default=dfs['Trade_Category'].unique()
+        )
+
+        dfs = dfs.query(
+            'Building_Trade ==@Building_Trade & Trade_Category==@Trade_Category'
+        )
+     # ----------------------------------------Main page-----------------------------------------------------------
+        html_card_title_schedules="""
+        <div class="card">
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; padding-top: 5px; width: 800px;
+           height: 50px;">
+            <h1 class="card-title" style=color:#1dacd6; font-family:Georgia; text-align: left; padding: 0px 0;">SCHEDULES DASHBOARD Nov 2021</h1>
+          </div>
+        </div>
+        """
+        st.markdown(html_card_title_schedules, unsafe_allow_html=True)
+        st.markdown('##')
+        st.markdown('##')
+
+        total_schedule = dfs.shape[0]
+        schedule_outstanding = dfs[dfs['Work_Completed_Date'].isna()].shape[0]
+        schedule_completed = dfs[dfs['Work_Completed_Date'].notna()].shape[0]
+        total_SR = dfs.Total_Number_of_Service_Reports.sum()
+        # total_asset =
+        alert_case = int(dfs['Alert_Case'].sum())
+
+        column01_schedule, column02_schedule, column03_schedule, column04_schedule, column05_schedule = st.columns(5)
+        with column01_schedule, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Total</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{total_schedule}</h2>", unsafe_allow_html=True)
+
+        with column02_schedule, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Outstanding</h6>",unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{schedule_outstanding}</h2>", unsafe_allow_html=True)
+
+        with column03_schedule, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Completed</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{schedule_completed}</h2>", unsafe_allow_html=True)
+
+        with column04_schedule, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Alert</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: red;'>{alert_case}</h2>", unsafe_allow_html=True)
+
+        with column05_schedule, _lock:
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>No.of SR</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{total_SR}</h2>", unsafe_allow_html=True)
+
+        html_card_subheader_outstanding_schedules="""
+        <div class="card">
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 350px;
+           height: 50px;">
+            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Outstanding Schedules</h3>
+          </div>
+        </div>
+        """
+        html_card_subheader_daily_schedules="""
+        <div class="card">
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 350px;
+           height: 50px;">
+            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Daily Schedule Cases</h3>
+          </div>
+        </div>
+        """
+        html_card_subheader_schedules_Tier1="""
+        <div class="card">
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 600px;
+           height: 50px;">
+            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Completed Schedules vs Building Trade</h3>
+          </div>
+        </div>
+        """
+        html_card_subheader_schedules_Tier2="""
+        <div class="card">
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 600px;
+           height: 50px;">
+            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Completed Schedules vs Trade Category</h3>
+          </div>
+        </div>
+        """
+
+#--------------------------------------- color & width & opacity----------------------------------------------
+        # Pie chart
+        colorpieoutstandings = ['#1dacd6', '#4c9085', '#50a747', '#59656d', '#06c2ac', '#137e6d', '#929906', '#ff9408']
+        colorpierecoveredstier1 = ['#1dacd6', '#4c9085', '#50a747', '#59656d', '#06c2ac', '#137e6d', '#929906', '#ff9408']
+
+        # all barchart and linechart
+        titlefontcolors = '#1dacd6'
+        gridwidths = 0.1
+        gridcolors = '#1f3b4d'
+        plot_bgcolors = 'rgba(0,0,0,0)'
+
+        # x&y axis width and color
+        linewidths_xy_axis = 1
+        linecolors_xy_axis = '#59656d'
+
+        # all barchart
+        markercolors = '#1dacd6'
+        markerlinecolors = '#1dacd6'
+        markerlinewidths = 1
+
+        #linechart
+        linecolors = '#1dacd6'
+        linewidths = 2
+#------------------------------------------ Outstanding Schedules-------------------------------------------------
+
+        st.markdown('##')
+        st.markdown('##')
+        st.markdown("""<hr style="height:5px;border:none;color:#333;background-color:#333;" /> """,
+                    unsafe_allow_html=True)
+        st.markdown(html_card_subheader_outstanding_schedules, unsafe_allow_html=True)
+        st.markdown('##')
+
+        dfs_outstanding = dfs[dfs['Work_Completed_Date'].isna()]
+        st.dataframe(dfs_outstanding)   # if have more outstanding schedule just remove this line
+        # sers_outstanding_building = dfs_outstanding.groupby(['Building_Trade'])['Trade_Category'].count().sort_values(ascending=False)
+        # sers_outstanding_category = dfs_outstanding.groupby(['Trade_Category'])['Building_Trade'].count().sort_values(ascending=False)
+
+        # xs_outstanding_building = sers_outstanding_building.index
+        # ys_outstanding_building = sers_outstanding_building.values
+        # xs_outstanding_category = sers_outstanding_category.index
+        # ys_outstanding_category = sers_outstanding_category.values
+
+        # figs_outstanding_building, figs_outstanding_category = st.columns([1, 2])
+
+        # with figs_outstanding_building, _lock:
+        #     figs_outstanding_building = go.Figure(data=[go.Pie(labels=xs_outstanding_building, values=ys_outstanding_building, hoverinfo='all', textinfo='label+percent+value',
+        #                                                        textfont_size=15, textfont_color='white', textposition='inside', showlegend=False, hole=.4)])
+        #     figs_outstanding_building.update_layout(title='Number of Schedule vs Building Trade', annotations=[dict(text='Outstanding', x=0.5, y=0.5, font_size=15, font_color='white', showarrow=False)])
+        #     figs_outstanding_building.update_traces(marker=dict(colors=colorpieoutstandings))
+        #     st.plotly_chart(figs_outstanding_building, use_container_width=True)
+
+        # with figs_outstanding_category, _lock:
+        #     figs_outstanding_category = go.Figure(data=[go.Bar(x=xs_outstanding_category, y=ys_outstanding_category, orientation='v',
+        #                                                        text=ys_outstanding_category,textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+        #                                                        textposition='auto', textangle=-45)
+        #                                                 ])
+        #     figs_outstanding_category.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolors, showgrid=False, gridwidth=gridwidths,
+        #                        gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+        #     figs_outstanding_category.update_yaxes(title_text='Number of Schedule', title_font_color=titlefontcolors, showgrid=True, gridwidth=gridwidths,
+        #                        gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+        #     figs_outstanding_category.update_traces(marker_color=markercolors, marker_line_color=markerlinecolors, marker_line_width=markerlinewidths)
+        #     figs_outstanding_category.update_layout(title='Number of Schedule vs Trade Category', plot_bgcolor=plot_bgcolors)
+        #     st.plotly_chart(figs_outstanding_category, use_container_width=True)
+
+# ------------------------------------------ Daily Schedules-------------------------------------------------
+        st.markdown("""<hr style="height:5px;border:none;color:#333;background-color:#333;" /> """,
+                    unsafe_allow_html=True)
+        st.markdown(html_card_subheader_daily_schedules, unsafe_allow_html=True)
+        st.markdown('##')
+
+        dfs_completed = dfs[dfs['Work_Completed_Date'].notna()].loc[:, ['Building_Trade', 'Trade_Category', 'Strategic_Partner', 'Frequency',
+               'Description', 'Type', 'Scope', 'Site', 'Building', 'Floor', 'Room',
+               'Start_Date', 'End_Date', 'Work_Started_Date', 'Work_Completed_Date',
+               'Attended_By', 'Service_Report_Completed_Date', 'Time_Work_Completed_hrs']]
+
+        dfs_completedupdated = dfs_completed.loc[:, ['Building_Trade', 'Trade_Category', 'Work_Started_Date', 'Time_Work_Completed_hrs']]
+
+        xs_daily = dfs_completedupdated['Work_Started_Date'].dt.day.value_counts().sort_index().index
+        ys_daily = dfs_completedupdated['Work_Started_Date'].dt.day.value_counts().sort_index().values
+        ys_mean = dfs_completedupdated['Work_Started_Date'].dt.day.value_counts().sort_index().mean()
+
+        figs_daily = go.Figure(data=go.Scatter(x=xs_daily, y=ys_daily, mode='lines+markers+text', line=dict(color=linecolors, width=linewidths),
+                                text=ys_daily, textfont=dict(family='sana serif', size=14, color='#c4fff7'), textposition='top center'))
+        figs_daily.add_hline(y=ys_mean, line_dash='dot', line_color='#96ae8d', line_width=2, annotation_text='Average Line',
+                                annotation_position='bottom right', annotation_font_size=18, annotation_font_color='green')
+        figs_daily.update_xaxes(title_text='Date', tickangle=-45, title_font_color=titlefontcolors, tickmode='linear',
+                                   range=[1, 31], showgrid=False, gridwidth=gridwidths, gridcolor=gridcolors,
+                                showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+        figs_daily.update_yaxes(title_text='Number of Schedule', title_font_color=titlefontcolors, tickmode='linear', showgrid=False,
+                                gridwidth=gridwidths, gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+        figs_daily.update_layout(title='Number of Schedule vs Date', plot_bgcolor=plot_bgcolors,
+                                 # xaxis=dict(showticklabels=True, ticks='outside', tickfont=dict(family='Arial', size=12, color='rgb(82, 82, 82)')),
+                                 # yaxis=dict(showticklabels=True, ticks='outside', tickfont=dict(family='Arial', size=12, color='rgb(82, 82, 82)'))
+                                 )
+        st.plotly_chart(figs_daily, use_container_width=True)
+
+# ------------------------------------------ Schedules Tier1 & Tier2-------------------------------------------------
+        st.markdown('##')
+        st.markdown('##')
+        st.markdown(html_card_subheader_schedules_Tier1, unsafe_allow_html=True)
+        st.markdown('##')
+
+        dfs1 = dfs_completedupdated.groupby(by=['Building_Trade']).agg(['count', 'max', 'min', 'mean', 'sum']).sort_values(('Time_Work_Completed_hrs', 'count'), ascending=False)
+        col_name_s1 = ['Schedule_Completed_count', 'Time_Schedule_Completed_max(hrs)', 'Time_Schedule_Completed_min(hrs)',
+                       'Time_Schedule_Completed_mean(hrs)', 'Time_Schedule_Completed_sum(hrs)']
+        dfs1.columns = col_name_s1
+
+        dfs1.reset_index(inplace=True)
+
+        xs1 = dfs1['Building_Trade']
+        ys1 = dfs1['Schedule_Completed_count']
+        ys2 = dfs1['Time_Schedule_Completed_mean(hrs)']
+        ys3 = dfs1['Time_Schedule_Completed_sum(hrs)']
+
+        figs01, figs02, figs03 = st.columns(3)
+        with figs01, _lock:
+            figs01 = go.Figure(data=[go.Pie(values=ys1, labels=xs1, hoverinfo='all', textinfo='label+percent+value', textfont_size=15, textfont_color='white', textposition='inside', showlegend=False, hole=.4)])
+            figs01.update_layout(title='Proportions of Building Trade', annotations=[dict(text='Completed', x=0.5, y=0.5, font_size=15, font_color='white', showarrow=False)])
+            figs01.update_traces(marker=dict(colors=colorpierecoveredstier1))
+            st.plotly_chart(figs01, use_container_width=True)
+
+        with figs02, _lock:
+            figs02 = go.Figure(data=[go.Bar(x=xs1, y=ys2, orientation='v', text=ys2,
+                                            textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                            textposition='auto', textangle=-45, texttemplate='%{text:.2f}')
+                                     ])
+            figs02.update_xaxes(title_text="Building Trade", tickangle=-45, title_font_color=titlefontcolors, showgrid=False, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs02.update_yaxes(title_text='Mean Time Spent(hrs)', title_font_color=titlefontcolors, showgrid=True, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs02.update_traces(marker_color=markercolors, marker_line_color=markerlinecolors, marker_line_width=markerlinewidths)
+            figs02.update_layout(title='Mean Time Spent to Complete(hrs)', plot_bgcolor=plot_bgcolors)
+            st.plotly_chart(figs02, use_container_width=True)
+
+        with figs03, _lock:
+            figs03 = go.Figure(data=[go.Bar(x=xs1, y=ys3, orientation='v', text=ys3,
+                                            textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                            textposition='auto', textangle=-45, texttemplate='%{text:.2f}')
+                                     ])
+            figs03.update_xaxes(title_text="Building Trade", tickangle=-45, title_font_color=titlefontcolors, showgrid=False, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs03.update_yaxes(title_text='Total Time Spent(hrs)', title_font_color=titlefontcolors, showgrid=True, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs03.update_traces(marker_color=markercolors, marker_line_color=markerlinecolors, marker_line_width=markerlinewidths)
+            figs03.update_layout(title='Total Time Spent to Complete(hrs)', plot_bgcolor=plot_bgcolors)
+            st.plotly_chart(figs03, use_container_width=True)
+
+        st.markdown('##')
+        st.markdown('##')
+        st.markdown(html_card_subheader_schedules_Tier2, unsafe_allow_html=True)
+        st.markdown('##')
+
+        dfs2 = dfs_completedupdated.groupby(by=['Trade_Category']).agg(['count', 'max', 'min', 'mean', 'sum'])
+        col_name_s2 = ['Schedule_Completed_count', 'Time_Schedule_Completed_max(hrs)', 'Time_Schedule_Completed_min(hrs)', 'Time_Schedule_Completed_mean(hrs)', 'Time_Schedule_Completed_sum(hrs)']
+        dfs2.columns = col_name_s2
+        dfs2.reset_index(inplace=True)
+
+        dfs_fig04 = dfs2.loc[:, ['Trade_Category', 'Schedule_Completed_count']].sort_values('Schedule_Completed_count', ascending=False).head(10)
+        dfs_fig05 = dfs2.loc[:, ['Trade_Category', 'Time_Schedule_Completed_mean(hrs)']].sort_values('Time_Schedule_Completed_mean(hrs)', ascending=False).head(10)
+        dfs_fig06 = dfs2.loc[:, ['Trade_Category', 'Time_Schedule_Completed_sum(hrs)']].sort_values('Time_Schedule_Completed_sum(hrs)', ascending=False).head(10)
+
+        xs_fig04 = dfs_fig04['Trade_Category']
+        ys_fig04 = dfs_fig04['Schedule_Completed_count']
+
+        xs_fig05 = dfs_fig05['Trade_Category']
+        ys_fig05 = dfs_fig05['Time_Schedule_Completed_mean(hrs)']
+
+        xs_fig06 = dfs_fig06['Trade_Category']
+        ys_fig06 = dfs_fig06['Time_Schedule_Completed_sum(hrs)']
+
+        figs04, figs05, figs06 = st.columns(3)
+        with figs04, _lock:
+            figs04 = go.Figure(data=[go.Bar(x=xs_fig04, y=ys_fig04, orientation='v', text=ys_fig04,
+                                            textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                            textposition='auto', textangle=-45)
+                                     ])
+            figs04.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolors, showgrid=False,
+                                gridwidth=gridwidths, gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs04.update_yaxes(title_text='Count', title_font_color=titlefontcolors, showgrid=True, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs04.update_traces(marker_color=markercolors, marker_line_color=markerlinecolors, marker_line_width=markerlinewidths)
+            figs04.update_layout(title='Count-Top 10', plot_bgcolor=plot_bgcolors)
+            st.plotly_chart(figs04, use_container_width=True)
+
+        with figs05, _lock:
+            figs05 = go.Figure(data=[go.Bar(x=xs_fig05, y=ys_fig05, orientation='v', text=ys_fig05,
+                                            textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                            textposition='auto', textangle=-45, texttemplate='%{text:.2f}')
+                                     ])
+            figs05.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolors, showgrid=False, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs05.update_yaxes(title_text='Mean Time Spent(hrs)', title_font_color=titlefontcolors, showgrid=True, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs05.update_traces(marker_color=markercolors, marker_line_color=markerlinecolors, marker_line_width=markerlinewidths)
+            figs05.update_layout(title='Mean Time Spent to Complete(hrs)-Top 10', plot_bgcolor=plot_bgcolors)
+            st.plotly_chart(figs05, use_container_width=True)
+
+        with figs06, _lock:
+            figs06 = go.Figure(data=[go.Bar(x=xs_fig06, y=ys_fig06, orientation='v', text=ys_fig06,
+                                            textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+                                            textposition='auto', textangle=-45, texttemplate='%{text:.2f}')
+                                     ])
+            figs06.update_xaxes(title_text="Trade Category", tickangle=-45, title_font_color=titlefontcolors, showgrid=False, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs06.update_yaxes(title_text='Total Time Spent(hrs)', title_font_color=titlefontcolors, showgrid=True, gridwidth=gridwidths,
+                               gridcolor=gridcolors, showline=True, linewidth=linewidths_xy_axis, linecolor=linecolors_xy_axis)
+            figs06.update_traces(marker_color=markercolors, marker_line_color=markerlinecolors, marker_line_width=markerlinewidths)
+            figs06.update_layout(title='Total Time Spent to Complete(hrs)-Top 10', plot_bgcolor=plot_bgcolors)
+            st.plotly_chart(figs06, use_container_width=True)
+
+
 
 
 

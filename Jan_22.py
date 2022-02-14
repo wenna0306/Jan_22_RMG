@@ -1100,24 +1100,24 @@ if authentication_status:
 
 
 
-        st.markdown('##')
-        st.markdown('##')
-        x_technician = df.Attended_By.value_counts().index
-        y_technicain = df.Attended_By.value_counts().values
-        fig26 = go.Figure(data=[go.Bar(x=x_technician, y=y_technicain, orientation='v', text=y_technicain,
-                                        textfont=dict(family='sana serif', size=14, color='#c4fff7'),
-                                        textposition='auto', textangle=-45)])
-        fig26.update_xaxes(title_text="Name", title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
-                            gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
-                            linecolor=linecolor_xy_axis, tickangle=-45)
-        fig26.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=False,
-                            gridwidth=gridwidth,
-                            gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
-                            linecolor=linecolor_xy_axis)
-        fig26.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor,
-                            marker_line_width=markerlinewidth, opacity=opacity03)
-        fig26.update_layout(title='Number of Fault vs Name', plot_bgcolor=plot_bgcolor)
-        st.plotly_chart(fig26, use_container_width=True)
+        # st.markdown('##')
+        # st.markdown('##')
+        # x_technician = df.Attended_By.value_counts().index
+        # y_technicain = df.Attended_By.value_counts().values
+        # fig26 = go.Figure(data=[go.Bar(x=x_technician, y=y_technicain, orientation='v', text=y_technicain,
+        #                                 textfont=dict(family='sana serif', size=14, color='#c4fff7'),
+        #                                 textposition='auto', textangle=-45)])
+        # fig26.update_xaxes(title_text="Name", title_font_color=titlefontcolor, showgrid=False, gridwidth=gridwidth,
+        #                     gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
+        #                     linecolor=linecolor_xy_axis, tickangle=-45)
+        # fig26.update_yaxes(title_text='Number of Fault', title_font_color=titlefontcolor, showgrid=False,
+        #                     gridwidth=gridwidth,
+        #                     gridcolor=gridcolor, showline=True, linewidth=linewidth_xy_axis,
+        #                     linecolor=linecolor_xy_axis)
+        # fig26.update_traces(marker_color=markercolor, marker_line_color=markerlinecolor,
+        #                     marker_line_width=markerlinewidth, opacity=opacity03)
+        # fig26.update_layout(title='Number of Fault vs Name', plot_bgcolor=plot_bgcolor)
+        # st.plotly_chart(fig26, use_container_width=True)
 
 
 # =======================================Schedule===================================================================

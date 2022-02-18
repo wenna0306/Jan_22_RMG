@@ -18,15 +18,15 @@ st.set_page_config(page_title='iSMM Dashboard',
                    initial_sidebar_state='collapsed')
 
 
-page = st_btn_select(('Faults', 'Schedules', 'Asset', 'Corrective Maintenance', 'Utilities', 'Inventories'),
+page = st_btn_select(('Faults', 'Schedules', 'Asset', 'Inventories'),
                      nav=True,
                      format_func=lambda name: name.capitalize(),
                      )
 
 #-----------------------------------------------User Authentication-----------------------------------------------
 names = ['wenna', 'Lifei', 'Thiru']
-usernames = ['wenna0306@gmail.com', 'Lifei', 'Thiru']
-passwords = ['password', 'password', 'password']
+usernames = ['wenna0306@gmail.com', 'Lifei', 'Thiru', 'booninn.loh@surbanajurong.com']
+passwords = ['password', 'password', 'password', 'password']
 
 hashed_passwords = stauth.hasher(passwords).generate()
 
@@ -84,7 +84,10 @@ if authentication_status:
         df1 = df.Location.str.split(pat=' > ', expand=True, n=4).rename(columns={0:'Site', 1:'Building', 2:'Level', 3:'Room'})
         df2 = pd.concat([df, df1], axis=1)
 
-        df_outstanding = df2.loc[(df2['Cancel_Status'].isna()) & (df2['Work_Completed_Date'].isna()),:]
+        outstanding_cols = ['Building_Trade', 'Trade_Category', 'Type_of_Fault', 'Impact', 'Location', 'Cancel_Status', 
+        'Reported_Date', 'Other_Trades_Required_Date', 'Cost_Cap_Exceed_Date', 'Assistance_Requested_Date', 'Fault_Reference', 
+        'End_User_Priority', 'Incident_Report']
+        df_outstanding = df2.loc[(df2['Cancel_Status'].isna()) & (df2['Work_Completed_Date'].isna()), outstanding_cols]
 
         df3 = df2.loc[(df2['Cancel_Status'].isna()) & (df2['Work_Completed_Date'].notna()),:]  # recovered Fault
         cols_drop = ['Impact', 'Cancel_Status', 'Other_Trades_Required_Date', 'Cost_Cap_Exceed_Date', 'Assistance_Requested_Date',
@@ -1162,7 +1165,7 @@ if page =='Schedules':
         <div class="card">
           <div class="card-body" style="border-radius: 10px 10px 0px 0px; padding-top: 5px; width: 800px;
            height: 50px;">
-            <h1 class="card-title" style=color:#1dacd6; font-family:Georgia; text-align: left; padding: 0px 0;">SCHEDULES DASHBOARD Nov 2021</h1>
+            <h1 class="card-title" style=color:#4c9085; font-family:Georgia; text-align: left; padding: 0px 0;">SCHEDULES DASHBOARD</h1>
           </div>
         </div>
         """
@@ -1179,65 +1182,65 @@ if page =='Schedules':
 
         column01_schedule, column02_schedule, column03_schedule, column04_schedule, column05_schedule = st.columns(5)
         with column01_schedule, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Total</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{total_schedule}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #4c9085;'>Total</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #4c9085;'>{total_schedule}</h2>", unsafe_allow_html=True)
 
         with column02_schedule, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Outstanding</h6>",unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{schedule_outstanding}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #4c9085;'>Outstanding</h6>",unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #4c9085;'>{schedule_outstanding}</h2>", unsafe_allow_html=True)
 
         with column03_schedule, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Completed</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{schedule_completed}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #4c9085;'>Completed</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #4c9085;'>{schedule_completed}</h2>", unsafe_allow_html=True)
 
         with column04_schedule, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>Alert</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #4c9085;'>Alert</h6>", unsafe_allow_html=True)
             st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: red;'>{alert_case}</h2>", unsafe_allow_html=True)
 
         with column05_schedule, _lock:
-            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #1dacd6;'>No.of SR</h6>", unsafe_allow_html=True)
-            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #1dacd6;'>{total_SR}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h6 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:bottom; color: #4c9085;'>No.of SR</h6>", unsafe_allow_html=True)
+            st.markdown(f"<h2 style='background-color:#0e1117; width:120px; height:20px; text-align: left; vertical-align:top; color: #4c9085;'>{total_SR}</h2>", unsafe_allow_html=True)
 
         html_card_subheader_outstanding_schedules="""
         <div class="card">
-          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 350px;
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #4c9085; padding-top: 5px; width: 350px;
            height: 50px;">
-            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Outstanding Schedules</h3>
+            <h3 class="card-title" style="background-color:#4c9085; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Outstanding Schedules</h3>
           </div>
         </div>
         """
         html_card_subheader_daily_schedules="""
         <div class="card">
-          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 350px;
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #4c9085; padding-top: 5px; width: 350px;
            height: 50px;">
-            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Daily Schedule Cases</h3>
+            <h3 class="card-title" style="background-color:#4c9085; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Daily Schedule Cases</h3>
           </div>
         </div>
         """
         html_card_subheader_schedules_Tier1="""
         <div class="card">
-          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 600px;
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #4c9085; padding-top: 5px; width: 600px;
            height: 50px;">
-            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Completed Schedules vs Building Trade</h3>
+            <h3 class="card-title" style="background-color:#4c9085; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Completed Schedules vs Building Trade</h3>
           </div>
         </div>
         """
         html_card_subheader_schedules_Tier2="""
         <div class="card">
-          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #1dacd6; padding-top: 5px; width: 600px;
+          <div class="card-body" style="border-radius: 10px 10px 0px 0px; background: #4c9085; padding-top: 5px; width: 600px;
            height: 50px;">
-            <h3 class="card-title" style="background-color:#1dacd6; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Completed Schedules vs Trade Category</h3>
+            <h3 class="card-title" style="background-color:#4c9085; color:#eabd1d; font-family:Georgia; text-align: center; padding: 0px 0;">Completed Schedules vs Trade Category</h3>
           </div>
         </div>
         """
 
 #--------------------------------------- color & width & opacity----------------------------------------------
         # Pie chart
-        colorpieoutstandings = ['#1dacd6', '#4c9085', '#50a747', '#59656d', '#06c2ac', '#137e6d', '#929906', '#ff9408']
-        colorpierecoveredstier1 = ['#1dacd6', '#4c9085', '#50a747', '#59656d', '#06c2ac', '#137e6d', '#929906', '#ff9408']
+        colorpieoutstandings = ['#4c9085', '#1dacd6', '#50a747', '#59656d', '#06c2ac', '#137e6d', '#929906', '#ff9408']
+        colorpierecoveredstier1 = ['#4c9085', '#1dacd6', '#50a747', '#59656d', '#06c2ac', '#137e6d', '#929906', '#ff9408']
 
         # all barchart and linechart
-        titlefontcolors = '#1dacd6'
+        titlefontcolors = '#4c9085'
         gridwidths = 0.1
         gridcolors = '#1f3b4d'
         plot_bgcolors = 'rgba(0,0,0,0)'
@@ -1247,12 +1250,12 @@ if page =='Schedules':
         linecolors_xy_axis = '#59656d'
 
         # all barchart
-        markercolors = '#1dacd6'
-        markerlinecolors = '#1dacd6'
+        markercolors = '#4c9085'
+        markerlinecolors = '#4c9085'
         markerlinewidths = 1
 
         #linechart
-        linecolors = '#1dacd6'
+        linecolors = '#4c9085'
         linewidths = 2
 #------------------------------------------ Outstanding Schedules-------------------------------------------------
 

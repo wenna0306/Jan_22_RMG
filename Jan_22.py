@@ -1125,7 +1125,7 @@ if authentication_status:
 
 
 # =======================================Schedule===================================================================
-if page =='Schedules':
+    if page =='Schedules':
         def fetch_file_schedules(filename):
             cols = ['Schedule ID', 'Building Trade', 'Trade Category', 'Strategic Partner',
                'Frequency', 'Description', 'Type', 'Scope', 'Site', 'Building',
